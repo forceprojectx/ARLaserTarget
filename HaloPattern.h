@@ -42,7 +42,17 @@
 
 // Draws a frame for the pattern
 // @return bool: true if the pattern has a next frame.
-bool RedCCW(uint16_t currentFrame);
+bool RedCW(uint16_t currentFrame);
+
+// Draws a frame for the pattern
+// @param currentFrame: The current animation frame. Zero indexed. (First frame is frame 0)
+// @return bool: true if the pattern has a next frame.
+bool BlueCW(uint16_t currentFrame);
+
+// Draws a frame for the pattern
+// @param currentFrame: The current animation frame. Zero indexed. (First frame is frame 0)
+// @return bool: true if the pattern has a next frame.
+bool GreenCW(uint16_t currentFrame);
 
 void InitLEDController();
 

@@ -53,7 +53,7 @@ void send16bits(uint16_t data, uint8_t latchBits=0)
 {
     for (int i = 16; i-- > 0;)
     {
-        if (0 > latchBits)
+        if (0 < latchBits)
         {
             if (i < latchBits)
             {
@@ -88,24 +88,20 @@ void send16bits(uint16_t data, uint8_t latchBits=0)
 // Draws a frame for the pattern
 // @param currentFrame: The current animation frame. Zero indexed. (First frame is frame 0)
 // @return bool: true if the pattern has a next frame.
-bool RedCCW(uint16_t currentFrame)
+bool RedCW(uint16_t currentFrame)
 {
-
     uint8_t latch_count = 0;
     bool retval=true;
     if (currentFrame >= RGB_LED_COUNT)
     {
-        currentFrame = currentFrame % RGB_LED_COUNT;
+        currentFrame = 0;
         retval=false;
     }
     // Turn off halo
     P6OUT &= ~BIT0;
-    //HALO_DATA_OUT |= (1 << HALO_OUTPUT_EN);
 
     // for each RGB LED, output a 1 for the active frame red LED and 0 for all others
     // LED data should be sent Blue, green, red.
-
-
     // halo position loop
     for (uint8_t k = RGB_LED_COUNT; k-- > 0;)
     {
@@ -141,11 +137,127 @@ bool RedCCW(uint16_t currentFrame)
             {
                 send16bits(0x0000, latch_count);
             }
-
         }
-
     }
 
+    // turn on halo
+    P6OUT |= BIT0;
+    return retval;
+}
+
+// Draws a frame for the pattern
+// @param currentFrame: The current animation frame. Zero indexed. (First frame is frame 0)
+// @return bool: true if the pattern has a next frame.
+bool BlueCW(uint16_t currentFrame)
+{
+    uint8_t latch_count = 0;
+    bool retval = true;
+    if (currentFrame >= RGB_LED_COUNT)
+    {
+        currentFrame = 0;
+        retval = false;
+    }
+    // Turn off halo
+    P6OUT &= ~BIT0;
+
+    // for each RGB LED, output a 1 for the active frame red LED and 0 for all others
+    // LED data should be sent Blue, green, red.
+    // halo position loop
+    for (uint8_t k = RGB_LED_COUNT; k-- > 0;)
+    {
+        // RGB loop
+        //The sending sequence is from MSB to LSB, from Blue color to Green color, and finally, Red color.
+        for (uint8_t j = 3; j-- > 0;)
+        {
+            // last color of the RGB cluster?
+            if (0 == j)
+            {
+                if (0 != k)
+                {
+                    // WRTGS need 1 clock of latch to write data to GS register
+                    latch_count = 1;
+                }
+                else if (0 == k)
+                {
+                    // LATGS need 3 clock of latch to write data to GS register
+                    latch_count = 3;
+                }
+            }
+            else
+            {
+                latch_count = 0;
+            }
+
+
+            if (k == currentFrame && 2 == j)
+            {
+                send16bits(0xFFFF, latch_count);
+            }
+            else
+            {
+                send16bits(0x0000, latch_count);
+            }
+        }
+    }
+
+    // turn on halo
+    P6OUT |= BIT0;
+    return retval;
+}
+// Draws a frame for the pattern
+// @param currentFrame: The current animation frame. Zero indexed. (First frame is frame 0)
+// @return bool: true if the pattern has a next frame.
+bool GreenCW(uint16_t currentFrame)
+{
+    uint8_t latch_count = 0;
+    bool retval = true;
+    if (currentFrame >= RGB_LED_COUNT)
+    {
+        currentFrame = 0;
+        retval = false;
+    }
+    // Turn off halo
+    P6OUT &= ~BIT0;
+
+    // for each RGB LED, output a 1 for the active frame red LED and 0 for all others
+    // LED data should be sent Blue, green, red.
+    // halo position loop
+    for (uint8_t k = RGB_LED_COUNT; k-- > 0;)
+    {
+        // RGB loop
+        //The sending sequence is from MSB to LSB, from Blue color to Green color, and finally, Red color.
+        for (uint8_t j = 3; j-- > 0;)
+        {
+            // last color of the RGB cluster?
+            if (0 == j)
+            {
+                if (0 != k)
+                {
+                    // WRTGS need 1 clock of latch to write data to GS register
+                    latch_count = 1;
+                }
+                else if (0 == k)
+                {
+                    // LATGS need 3 clock of latch to write data to GS register
+                    latch_count = 3;
+                }
+            }
+            else
+            {
+                latch_count = 0;
+            }
+
+
+            if (k == currentFrame && 1 == j)
+            {
+                send16bits(0xFFFF, latch_count);
+            }
+            else
+            {
+                send16bits(0x0000, latch_count);
+            }
+        }
+    }
 
     // turn on halo
     P6OUT |= BIT0;
@@ -160,7 +272,7 @@ void InitLEDController()
     // Unlock FC register
     // 15 SCLK rising edge must be input while LAT is high.
     HALO_DATA_OUT |= HALO_LATCH_LED;
-    for (int i = 0; i < 15; i++)
+    for (int i = 15; i-->0;)
     {
         //output clock high
         HALO_DATA_OUT |= HALO_CLK_SIG;
@@ -181,6 +293,7 @@ void InitLEDController()
     fc_register.SetBit_CCG(204);
     // hardware limit for Max current is based on Red's current requirement, so set Red limiter to max
     fc_register.SetBit_CCR(0xFFFF);
+    fc_register.SetBit_XREFRESH(true);
 
     send16bits(fc_register.Register_high);
     send16bits(fc_register.Register_mid);

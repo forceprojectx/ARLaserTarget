@@ -70,8 +70,11 @@ volatile uint8_t debounceTimerCount = 0;
 volatile int LED_OverflowCnt = 0;
 // do we need to transition to the next led animation frame
 volatile bool LED_State = 0;
+// Frame Rate Interrupt counter
+volatile uint32_t FrameInterruptCount = 0;
+
 // how many frames have been rendered
-volatile uint32_t FrameRenderCount = 0; 
+uint16_t FrameRenderCount = 0;
 
 
 //-------------------------
@@ -80,16 +83,6 @@ volatile uint32_t FrameRenderCount = 0;
 
 uint16_t crc;
 uint16_t crc_msg = 0;
-uint32_t eepromStored = 0;
-uint32_t eepromPatternArraySize = 0;
-uint32_t eepromMsgLen = 0;
-
-
-
-uint8_t IdleIndex;
-
-// the current state for the main CPU loop
-LEDCommands _state = PLAY_IDLE;
 
 
 
@@ -123,7 +116,7 @@ inline void Setup(void)
     // SELA_2 --->> Set ACLK = VLO (internal 10-kHz clock source); 
     // SELMS_0 --->> Selects DCOCLKDIV as the MCLK and SMCLK source 
     CSCTL4 = SELA_2 + SELMS_0;
-    
+
 
     // set dividers SMCLK/8; MCLK/1
     CSCTL5 = DIVS_3 + DIVM_0 + VLOAUTOOFF_1;
@@ -137,6 +130,19 @@ inline void Setup(void)
     // NOTE: MCLK -- 24 MHz
     // NOTE: VLO will be shut off if unused.
 
+    // Select GPIO for pin functions
+    P1SEL0 = 0;
+    P1SEL1 = 0;
+    P2SEL0 = 0;
+    P2SEL1 = 0;
+    P3SEL0 = 0;
+    P3SEL1 = 0;
+    P4SEL0 = 0;
+    P4SEL1 = 0;
+    P5SEL0 = 0;
+    P5SEL1 = 0;
+    P6SEL0 = 0;
+    P6SEL1 = 0;
 
     // set Port Registers to output
     // turn output off
@@ -159,9 +165,6 @@ inline void Setup(void)
     PBOUT &= 0x00;
     PCDIR |= 0xFF;
     PCOUT &= 0x00;
-    // PJDIR |= 0xFF;
-    //PJOUT &= 0;
-
 
 
     //P4DIR &= ~BIT0; // set pin 4.0 to input
@@ -171,6 +174,16 @@ inline void Setup(void)
     //P4IE = 0; //p4.0 interupt disabled
     //P4IES |= BIT0 | BIT1; // hi/lo edge;
     //P4IFG &= ~BIT0; // clear interrupt flag
+
+
+
+    //Direct register access to avoid compiler warning - #10420-D
+    //For FRAM devices, at start up, the GPO power-on default
+    //high-impedance mode needs to be disabled to activate previously
+    //configured port settings. This can be done by clearing the LOCKLPM5
+    //bit in PM5CTL0 register
+
+    PM5CTL0 &= ~LOCKLPM5;
 
 
     // halo frame rate timer
@@ -219,15 +232,11 @@ inline void Setup(void)
     debounced_state_prev = 0;
     debounced_state = 0;
     FrameRenderCount = 0;
-    IdleIndex = 0;
+    FrameInterruptCount = 0;
 
     // setup eeprom
     crc_msg = 0;
-    _state = LEDCommands::PLAY_IDLE;
-    eepromStored = 0;
 
-    
-    eepromMsgLen = 0;
 
     //debounce();
     InitLEDController();
@@ -259,8 +268,8 @@ inline void Loop(void)
     }
 
     // output halo clock
-    P6OUT |= BIT0;
-    P6OUT &= ~BIT0;
+    //P6OUT |= BIT0;
+    //P6OUT &= ~BIT0;
 
 
 
@@ -307,7 +316,7 @@ void __attribute__((interrupt(TIMER0_B1_VECTOR))) TIMER0_B1_ISR(void)
         //DEBUG_OUT ^= DEBUG_7;
         //DEBUG_OUT ^= DEBUG_7;
         LED_State = true;                  // overflow
-        FrameRenderCount++;
+        FrameInterruptCount++;
         break;
     default: break;
     }
@@ -439,16 +448,20 @@ int main(void)
 
 void RenderHaloFrame(void)
 {
-    if (FrameRenderCount > IDLE_TIME_COUNT)
+    if (FrameInterruptCount > IDLE_TIME_COUNT)
     {
         doIdle();
     }
 
     // Render the next animation frame.
     // If the animation returns false, the last frame has been rendered
-    if (!RedCCW(FrameRenderCount))
+    if (!BlueCW(FrameRenderCount))
     {
         FrameRenderCount = 0;
+    }
+    else
+    {
+        FrameRenderCount++;
     }
 
     LED_State = false;
@@ -508,7 +521,6 @@ uint8_t readkeys(void)
 void doIdle(void)
 {
     FrameRenderCount = 0;
-    IdleIndex++;
     __no_operation();
 }
 
