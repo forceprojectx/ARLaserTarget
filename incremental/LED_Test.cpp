@@ -258,6 +258,9 @@ inline void Loop(void)
         __no_operation();
     }
 
+    // output halo clock
+    P6OUT |= BIT0;
+    P6OUT &= ~BIT0;
 
 
 

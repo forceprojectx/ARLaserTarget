@@ -16,8 +16,10 @@
 /************************************************************************/
 
 #include <stdint.h>
+
 #include "HaloPattern.h"
 #include "LaserTarget.h"
+#include "TLC5957.h"
 
 /************************************************************************/
 /*                         #define declarations                         */
@@ -42,33 +44,44 @@ uint8_t Bezel_RGB = BEZEL_BLUE;
 /*                         Routine declarations                         */
 /************************************************************************/
 
-
 /// <summary>
 ///  send data most significant bit first
 /// </summary>
 /// <param name="data"></param>
-void send9bitByte(uint16_t data)
+/// <param name="latchBytes">number of end bits to hold latch high for</param>
+void send16bits(uint16_t data, uint8_t latchBits=0)
 {
-
-    for (int i = 9; i-- > 0;)
+    for (int i = 16; i-- > 0;)
     {
+        if (0 > latchBits)
+        {
+            if (i < latchBits)
+            {
+                // set latch data
+                HALO_DATA_OUT |= HALO_LATCH_LED;
+            }
+        }
         bool bitSet = (data & (1 << i)) >> (i);
         if (bitSet)
         {
             // Set HALO_DATA_LED signal HIGH
-            HALO_DATA_OUT |= 1 << HALO_DATA_LED;
+            HALO_DATA_OUT |= HALO_DATA_LED;
         }
         else
         {
             // Set HALO_DATA_LED signal LOW
-            HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
+            HALO_DATA_OUT &= ~HALO_DATA_LED;
         }
 
         //output clock high
-        HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
+        HALO_DATA_OUT |= HALO_CLK_SIG;
         //output clock low
-        HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
+        HALO_DATA_OUT &= ~HALO_CLK_SIG;
     }
+
+
+    // latch data
+    HALO_DATA_OUT &= ~HALO_LATCH_LED;
 }
 
 
@@ -77,6 +90,8 @@ void send9bitByte(uint16_t data)
 // @return bool: true if the pattern has a next frame.
 bool RedCCW(uint16_t currentFrame)
 {
+
+    uint8_t latch_count = 0;
     bool retval=true;
     if (currentFrame >= RGB_LED_COUNT)
     {
@@ -90,54 +105,47 @@ bool RedCCW(uint16_t currentFrame)
     // for each RGB LED, output a 1 for the active frame red LED and 0 for all others
     // LED data should be sent Blue, green, red.
 
-    // frame loop
-    for (uint8_t i = RGB_LED_COUNT; i-- > 0;)
-    {
 
+    // halo position loop
+    for (uint8_t k = RGB_LED_COUNT; k-- > 0;)
+    {
         // RGB loop
         //The sending sequence is from MSB to LSB, from Blue color to Green color, and finally, Red color.
         for (uint8_t j = 3; j-- > 0;)
         {
-            // halo position loop
-            for (uint8_t k = RGB_LED_COUNT; k-- > 0;)
+            // last color of the RGB cluster?
+            if (0 == j)
             {
-
-                if (k == i && 0 == j)
+                if (0 != k)
                 {
-                    // Set HALO_DATA_LED signal HIGH
-                    HALO_DATA_OUT |= 1 << HALO_DATA_LED;
+                    // WRTGS need 1 clock of latch to write data to GS register
+                    latch_count = 1;
                 }
-                else
+                else if (0 == k)
                 {
-                    // Set HALO_DATA_LED signal LOW
-                    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
+                    // LATGS need 3 clock of latch to write data to GS register
+                    latch_count = 3;
                 }
+            }
+            else
+            {
+                latch_count = 0;
+            }
+            
 
-                // need 1 clock of latch to write data to GS register
-                if (i!=0 && j == 0 && k == 0)
-                {
-                    HALO_DATA_OUT |= (1 << HALO_LATCH_LED);
-                }
-                // need 1 clock of latch to write data to GS register
-                if (i==0 && j == 0 && k == 2)
-                {
-                    HALO_DATA_OUT |= (1 << HALO_LATCH_LED);
-                }
-
-
-                //output clock high
-                HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-                //output clock low
-                HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
+            if (k == currentFrame && 0 == j)
+            {
+                send16bits(0xFFFF, latch_count);
+            }
+            else
+            {
+                send16bits(0x0000, latch_count);
             }
 
-            // latch data
-            HALO_DATA_OUT &= ~(1 << HALO_LATCH_LED);
         }
+
     }
 
-    // latch data
-    HALO_DATA_OUT &= ~(1 << HALO_LATCH_LED);
 
     // turn on halo
     P6OUT |= BIT0;
@@ -147,150 +155,38 @@ bool RedCCW(uint16_t currentFrame)
 void InitLEDController()
 {
     // SIN data doesnt matter. Set it high just cuz;
-    HALO_DATA_OUT |= 1 << HALO_DATA_LED;
+    HALO_DATA_OUT |= HALO_DATA_LED;
 
     // Unlock FC register
     // 15 SCLK rising edge must be input while LAT is high.
-    HALO_DATA_OUT |= (1 << HALO_LATCH_LED);
+    HALO_DATA_OUT |= HALO_LATCH_LED;
     for (int i = 0; i < 15; i++)
     {
         //output clock high
-        HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
+        HALO_DATA_OUT |= HALO_CLK_SIG;
         //output clock low
-        HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
+        HALO_DATA_OUT &= ~HALO_CLK_SIG;
     }
-    HALO_DATA_OUT &= ~(1 << HALO_LATCH_LED);
+    HALO_DATA_OUT &= ~HALO_LATCH_LED;
 
 
-    // add a few cpu cycles of delay as required by hardware.
-    __no_operation();
-    __no_operation();
-    __no_operation();
-    __no_operation();
+    // The TI chip requires atleast 80ns before we can write the data.
+    // So we will take the time to create the FC Register buffers here.
+    FCRegister fc_register;
+    // We don't need anything fancy. The defaults will do, for the most part.
+    fc_register.SetBits_default();
+    // Tune color settings for our hardware. 
+    // NOTE: These numbers are magic as hell.
+    fc_register.SetBit_CCB(102);
+    fc_register.SetBit_CCG(204);
+    // hardware limit for Max current is based on Red's current requirement, so set Red limiter to max
+    fc_register.SetBit_CCR(0xFFFF);
 
-    // 47 – 45 LGSE2
-    // 000b — no improvement
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    for (int i = 0; i < 15; i++)
-    {
-        //output clock high
-        HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-        //output clock low
-        HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-    }
-
-    // 44 Poker trans mode
-    // Poker trans mode enable bit. (0 = disabled
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
-    // 43 – 41 BC
-    // Global brightness control data for all output(Data = 0h - 7h) 
-    // 1
-    HALO_DATA_OUT &= (1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-    // 00
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
-
-
-    // 40 – 32 CCR
-    // 511d
-    send9bitByte(511);
-
-    // 31 – 23 CCG
-    // 204d
-    send9bitByte(204);
-
-    // 22 – 14 CCB
-    // 102d
-    send9bitByte(102);
-
-    // 13 – 11 LGSE1 -- Low Gray Scale Enhancement
-    //000
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-    
-    // 10 SEL_SCK_EDGE
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-    
-    // 9 LGSE3
-    // Compensation for Blue LED. (0 = disabled
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
-    // 8 ESPWM
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
-    // 7 SEL_PCHG 
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
-    // 6 SEL_GCK_EDGE 
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
-    // 5 XREFRESH
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
+    send16bits(fc_register.Register_high);
+    send16bits(fc_register.Register_mid);
     // 5 SCLK rising edge must be input while LAT is high.
     // The 48 - bit of common shift register is copied to FC register at the falling edge of LAT
-    HALO_DATA_OUT |= (1 << HALO_LATCH_LED);
-
-
-    // 4 SEL_GDLY
-    // Group delay select.
-    // When this bit is ‘0’, no delay between channels. All channels turn on at same time.
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
-    // 3 – 2 SEL_TD0
-    // TD0 is the time from SCLK to SOUT, typical value is 21 ns. Once received, SCLK, with 21 - ns delay, SOUT begins change.(default value when power up)
-    // 01
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
-    HALO_DATA_OUT &= (1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
-
-    // 1 – 0 LODVTH -- LOD detection threshold voltage.
-    // 01
-    HALO_DATA_OUT &= ~(1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
-    HALO_DATA_OUT &= (1 << HALO_DATA_LED);
-    HALO_DATA_OUT |= (1 << HALO_CLK_SIG);
-    HALO_DATA_OUT &= ~(1 << HALO_CLK_SIG);
-
-    // 5 SCLK rising edge must be input while LAT is high.
-    // The 48 - bit of common shift register is copied to FC register at the falling edge of LAT
-    HALO_DATA_OUT &= ~(1 << HALO_LATCH_LED);
-
+    send16bits(fc_register.Register_low, 5);
 
 }
 

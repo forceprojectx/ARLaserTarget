@@ -59,10 +59,10 @@ which is about as much as my test circuit will suffer due to slow switching tran
 //so should be between 0 and 7 inclusive
 // NOTE: Output is disabled when OUTPUT_EN is HIGH, and enabled when OUTPUT_EN shifts to LOW
 #define HALO_DATA_OUT   P3OUT
-#define HALO_CLK_SIG     6               //P3.6
-#define HALO_DATA_LED    5               //P3.5
-#define HALO_OUTPUT_EN   1               //P6.6?
-#define HALO_LATCH_LED   7               //P3.7
+#define HALO_CLK_SIG     BIT6               //P3.6
+#define HALO_DATA_LED    BIT5            //P3.5
+#define HALO_OUTPUT_EN   BIT1            //P6.0?
+#define HALO_LATCH_LED   BIT7            //P3.7
 
 #define CASH_HALO_OUT   P1OUT
 #define CASH_CLK_SIG    6               //P1.6
