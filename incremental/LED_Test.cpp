@@ -520,7 +520,8 @@ uint8_t readkeys(void)
 
 void doIdle(void)
 {
-    FrameRenderCount = 0;
+    FrameRenderCount &= 8;
+    FrameRenderCount ^= 8;
     __no_operation();
 }
 
