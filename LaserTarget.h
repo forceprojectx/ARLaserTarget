@@ -103,10 +103,16 @@ which is about as much as my test circuit will suffer due to slow switching tran
 #define DEBUG_4_A       BIT0
 #define DEBUG_4_B       BIT1
 
+#define DEBUG_6         P6OUT
+#define DEBUG_6_A       BIT3
+
 //-------------------------
 //    Input pins
 //-------------------------
 #define IN_LASER_SENSOR BIT4
+#define LASER_SENSOR_ADCPCTL    ADCPCTL4
+// Use input A4
+#define IN_LASER_SENSOR_ADCINCH ADCINCH_4
 
 //-------------------------
 //    Input values
