@@ -40,7 +40,7 @@
 /************************************************************************/
 /*                        Variables declarations                        */
 /************************************************************************/
-unsigned int LightSensor::ADC_value;
+volatile unsigned int LightSensor::ADC_value;
 
 /************************************************************************/
 /*                      Implementation (PRIVATE)                        */
@@ -142,16 +142,17 @@ void LightSensor::InitADC()
     // Configure the ADC Memory Buffer
 
 
-
     // Clear the adc conversion complete interrupt flag
     ADCIFG &= ~ADCIFG0;
 
+    // Enable the ADC conversion complete Interrupt
+    ADCIE |= ADCIE0|ADCINIE|ADCLOIE|ADCHIIE|ADCOVIE|ADCTOVIE;
 
 
+}
+
+void LightSensor::StartADCConv()
+{
     // enable ADC
     ADCCTL0 |= ADCENC | ADCSC;
-    ADCCTL0 |= ADCON;
-    // Enable the ADC conversion complete Interrupt
-    ADCIE |= ADCIE0;
-
 }
