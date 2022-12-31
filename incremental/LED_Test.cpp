@@ -108,26 +108,42 @@ inline void Setup(void)
 
     // CLOCK CONFIG
 
+    // disable FLL
+    __bis_SR_register(SCG0);
+
     // Configure DCO
     // DCORSEL_7 = 24 MHz(Only avaliable in 24MHz clock system)
+    // DCORSEL_5 = 16 MHz
     // DCOFTRIMEN_0 = Disable frequency trim. DCOFTRIM value is bypassed and the DCO applies default settings from manufacture
-    CSCTL1 = DCORSEL_7 + DCOFTRIMEN_0;
+    CSCTL1 = DCORSEL_5 + DCOFTRIMEN_0;
+
+    // FLL loop divider. These bits divide fDCOCLK in the FLL feedback loop. This results in an additional multiplier for the multiplier bits.
+    // Also see the FLLN multiplier bits
+    CSCTL2 = FLLD_0 + 487;
 
     // SELA_2 --->> Set ACLK = VLO (internal 10-kHz clock source); 
     // SELMS_0 --->> Selects DCOCLKDIV as the MCLK and SMCLK source 
     CSCTL4 = SELA_2 + SELMS_0;
 
-
+    // SMCLK directly derives from MCLK. SMCLK frequency is the combination of DIVM and DIVS out of selected clock source.
+    // DIVS --->> SMCLK source divider.
+    // DIVM --->> MCLK source divider
     // set dividers SMCLK/8; MCLK/1
     CSCTL5 = DIVS_3 + DIVM_0 + VLOAUTOOFF_1;
+
     // set dividers ACLK/1;
     CSCTL6 = DIVA_0;
+    __delay_cycles(3);
+    // enable FLL
+    __bic_SR_register(SCG0);
+    // FLL locked
+    while (CSCTL7 & (FLLUNLOCK0 | FLLUNLOCK1));
     // NOTE: at this point, on the msp430FR2355, The clock values will be:
     // NOTE: VLOCLK: Internal very-low-power low-frequency oscillator with 10-kHz typical frequency
-    // NOTE: DCO  -- 24 MHz
+    // NOTE: DCO  -- 16 MHz
     // NOTE: ACLK -- ~10 KHz (~0.01 MHz)
-    // NOTE: SMCLK-- 3 MHz
-    // NOTE: MCLK -- 24 MHz
+    // NOTE: SMCLK-- 2 MHz
+    // NOTE: MCLK -- 16 MHz
     // NOTE: VLO will be shut off if unused.
 
     // Select GPIO for pin functions
