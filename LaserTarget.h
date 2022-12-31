@@ -64,12 +64,6 @@ which is about as much as my test circuit will suffer due to slow switching tran
 #define HALO_OUTPUT_EN   BIT1            //P6.0?
 #define HALO_LATCH_LED   BIT7            //P3.7
 
-#define CASH_HALO_OUT   P1OUT
-#define CASH_CLK_SIG    6               //P1.6
-#define CASH_DATA_LED   4               //P1.4
-#define CASH_OUTPUT_EN  5               //P1.5
-#define CASH_LATCH_LED  7               //P1.7
-
 #define BEZEL_OUT       P2OUT
 #define BEZEL_RED       BIT1            //P2.1
 #define BEZEL_GREEN     BIT2            //P2.2
@@ -77,6 +71,39 @@ which is about as much as my test circuit will suffer due to slow switching tran
 
 #define USB_CHRG_OUT    P2OUT
 #define USB_CHRG_PIN    BIT0            //P2.0
+
+//-------------------------
+//    Comms pins
+//-------------------------
+
+// bluetooth communication pin assignments
+#define BT_SEL0			P1SEL0
+#define BT_SEL1			P1SEL1
+#define BT_SELC			P1SELC
+#define BT_DIR			P1DIR
+#define BT_REN			P1REN
+#define BT_IES			P1IES
+#define BT_IFG			UCA0IFG
+#define BT_IE			UCA0IE
+// eUSCI_A0 Control Word Register 0
+#define BT_CTLW0		UCA0CTLW0
+// eUSCI_Ax Modulation Control Word Register
+#define BT_MCTLW		UCA0MCTLW
+// Clock prescaler setting of the Baud rate generato
+#define BT_BRW			UCA0BRW
+
+// bluetooth Tx pin (uC Rx)
+#define BT_TX			BIT6
+// bluetooth Rx pin (uC Tx)
+#define BT_RX			BIT7
+
+//-------------------------
+//    Input pins
+//-------------------------
+#define IN_LASER_SENSOR BIT4
+#define LASER_SENSOR_ADCPCTL    ADCPCTL4
+// Use input A4
+#define IN_LASER_SENSOR_ADCINCH ADCINCH_4
 
 
 //-------------------------
@@ -106,13 +133,6 @@ which is about as much as my test circuit will suffer due to slow switching tran
 #define DEBUG_6         P6OUT
 #define DEBUG_6_A       BIT3
 
-//-------------------------
-//    Input pins
-//-------------------------
-#define IN_LASER_SENSOR BIT4
-#define LASER_SENSOR_ADCPCTL    ADCPCTL4
-// Use input A4
-#define IN_LASER_SENSOR_ADCINCH ADCINCH_4
 
 //-------------------------
 //    Input values
