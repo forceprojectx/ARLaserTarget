@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+    <PropertyGroup Label="UserMacros">
+    <CCS_BASE_ROOT>C:\ti\ccs1120\ccs\ccs_base</CCS_BASE_ROOT>
+    <PROJECT_ROOT>C:\Users\force\workspace_v11\LaserTarget</PROJECT_ROOT>
+    <CG_TOOL_ROOT>C:\ti\ccs1120\ccs\tools\compiler\ti-cgt-msp430_21.6.0.LTS</CG_TOOL_ROOT>
+    <CJPlatformDir>C:\Projects\LinuxCommon\PlatformIncludes\</CJPlatformDir>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NMakeIncludeSearchPath>$(CG_TOOL_ROOT);$(CCS_BASE_ROOT);$(PROJECT_ROOT);$(CJPlatformDir)</NMakeIncludeSearchPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="CCS_BASE_ROOT">
+      <Value>$(CCS_BASE_ROOT)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="PROJECT_ROOT">
+      <Value>$(PROJECT_ROOT)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="CG_TOOL_ROOT">
+      <Value>$(CG_TOOL_ROOT)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+    <BuildMacro Include="CJPlatformDir">
+      <Value>$(CJPlatformDir)</Value>
+      <EnvironmentVariable>true</EnvironmentVariable>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|MSP430">
+      <Configuration>Debug</Configuration>
+      <Platform>MSP430</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|MSP430">
+      <Configuration>Release</Configuration>
+      <Platform>MSP430</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Bluetooth.h" />
+    <ClInclude Include="..\HaloPattern.h" />
+    <ClInclude Include="..\TLC5957.h" />
+    <ClInclude Include="..\WS2812.h" />
+    <ClInclude Include="..\LaserTarget.h" />
+    <ClInclude Include="..\Serial.h" />
+    <ClInclude Include="..\LightSensor.h" />
+    <ClInclude Include="..\Interrupts.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Bluetooth.cpp" />
+    <ClCompile Include="..\HaloPattern.cpp" />
+    <ClCompile Include="..\incremental\LED_Test.cpp" />
+    <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="..\Serial.cpp" />
+    <ClCompile Include="..\TLC5957.cpp" />
+    <ClCompile Include="..\LightSensor.cpp" />
+    <ClCompile Include="..\Interrupts.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{f0fe763b-f12c-47ba-a02f-97072270ff06}</ProjectGuid>
+    <Keyword>Linux</Keyword>
+    <RootNamespace>LaserTarget</RootNamespace>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <ApplicationType>Linux</ApplicationType>
+    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
+    <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
+    <LinuxProjectType>{FC1A4D80-50E9-41DA-9192-61C0DBAA00D2}</LinuxProjectType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|MSP430'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|MSP430'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|MSP430'" Label="PropertySheets">
+    <Import Project="msp430.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|MSP430'" Label="PropertySheets">
+    <Import Project="msp430.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|MSP430'">
+    <NMakeIncludeSearchPath>$(CCS_BASE_ROOT)/msp430/include;$(CG_TOOL_ROOT)/include;$(SolutionDir);$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakePreprocessorDefinitions>__MSP430FR2355__;__GNUC__;_FRWP_ENABLE;_INFO_FRWP_ENABLE;__TI_COMPILER_VERSION__=3002001;__interrupt=;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+  </PropertyGroup>
+  <ItemDefinitionGroup />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

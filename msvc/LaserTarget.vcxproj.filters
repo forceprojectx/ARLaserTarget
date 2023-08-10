@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="headers">
+      <UniqueIdentifier>{3102b9c5-d442-4d11-80a9-0eeda5fc94cb}</UniqueIdentifier>
+      <Extensions>h;hpp</Extensions>
+    </Filter>
+    <Filter Include="source">
+      <UniqueIdentifier>{d0968e09-5939-4567-8aa5-6bd8be688cc2}</UniqueIdentifier>
+      <Extensions>c;cpp</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Serial.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LaserTarget.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\HaloPattern.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\WS2812.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TLC5957.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\LightSensor.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Interrupts.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Bluetooth.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\main.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Serial.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\incremental\LED_Test.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\HaloPattern.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TLC5957.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\LightSensor.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Interrupts.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Bluetooth.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
