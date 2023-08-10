@@ -86,8 +86,6 @@ void __attribute__((interrupt(TIMER0_B1_VECTOR))) TIMER0_B1_ISR(void)
 #error Compiler not supported!
 #endif
 {
-
-
     switch (__even_in_range(TB0IV, 14))
     {
     case  0: break;                          // No interrupt
@@ -130,7 +128,8 @@ void __attribute__((interrupt(TIMER1_B0_VECTOR))) TIMER1_B0_ISR(void)
 #error Compiler not supported!
 #endif
 {
-
+    DEBUG_6 ^= DEBUG_6_A;
+    DEBUG_6 ^= DEBUG_6_A;
 }
 
 // Timer1 Interrupt Vector (TB1IV) handler
@@ -146,8 +145,7 @@ void __attribute__((interrupt(TIMER1_B1_VECTOR))) TIMER1_B1_ISR(void)
 #error Compiler not supported!
 #endif
 {
-    DEBUG_6 ^= DEBUG_6_A;
-    DEBUG_6 ^= DEBUG_6_A;
+
 
     switch (__even_in_range(TB1IV, 0x0E))
     {
@@ -302,8 +300,8 @@ void __attribute__((interrupt(ADC_VECTOR))) ADC_ISR(void)
         LightSensor::ADC_value = ADCMEM0;
         // Sleep Timer Exits LPM3
         //__bic_SR_register_on_exit(LPM3_bits);
-
-    // Clear the adc conversion complete interrupt flag
+        
+        // Clear the adc conversion complete interrupt flag
         ADCIFG &= ~ADCIFG0;
         break;
     default:

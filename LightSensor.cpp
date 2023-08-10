@@ -56,12 +56,14 @@ volatile unsigned int LightSensor::ADC_value;
 
 void LightSensor::InitGPIO()
 {
+    // Enable changes to port registers
+    PM5CTL0 &= ~LOCKLPM5;
+
 	// Set P1.4 to input
 	P1DIR &= ~IN_LASER_SENSOR;
 	P1REN &= ~IN_LASER_SENSOR;
 	P1IES &= ~IN_LASER_SENSOR;
-    P1SEL0 |= IN_LASER_SENSOR;
-    P1SEL1 |= IN_LASER_SENSOR;
+    P1SELC = IN_LASER_SENSOR;
 
 	// Set Interrupts
 	P1IFG &= ~IN_LASER_SENSOR;
@@ -73,7 +75,7 @@ void LightSensor::InitADC()
 {
 
     //Turn OFF ADC Module and clear sample settings.
-    ADCCTL0 = 0;
+    ADCCTL0 &= ~(ADCON + ADCENC + ADCSC);
     // Disable ADC interrupts
     ADCIE = 0x00;
     // Reset interrupt flags
@@ -94,16 +96,13 @@ void LightSensor::InitADC()
     TB1CCR0 = 650;
     TB1CCR1 = 325;
     // Output mode: Toggle/reset
-    TB1CCTL0 = OUTMOD_2;
+    TB1CCTL0 |= OUTMOD_2;
 
     // Input divider expansion.
     // Divide by 0;
     TB1EX0 = TBIDEX_0;
 
     TB1CTL |= TBIE;
-
-    // Make sure the ENC bit is cleared before configuring a Memory Buffer Control
-// assert(!(ADCCTL0 & ADCENC));
 
 
 #ifdef ADCPCTL4
@@ -112,16 +111,10 @@ void LightSensor::InitADC()
     SYSCFG2 |= LASER_SENSOR_ADCPCTL;
 #endif
 
-    // Use input pin defined by IN_LASER_SENSOR_ADCINCH (pin A4 in original schematic)
-    // Use positive reference of AVcc
-    // Use negative reference of AVss
-    ADCMCTL0 = IN_LASER_SENSOR_ADCINCH;
-
-
     // Set Sample-Hold time to 16 ADCCLK cycles
     ADCCTL0 = ADCON | ADCSHT_2 | ADCMSC_1;
 
-    // USE MODOSC 5MHZ Digital Oscillator as clock source
+        // USE MODOSC 5MHZ Digital Oscillator as clock source
     // Set the Sample-and-Hold Source
     ADCCTL1 = ADCSHS_2
         // Set Clock Divider to 1
@@ -134,16 +127,19 @@ void LightSensor::InitADC()
         + ADCCONSEQ_2;
 
     //Set Clock Pre-Divider
-    // Use default clock divider of 1
+// Use default clock divider of 1
     ADCCTL2 = ADCPDIV_0
         // set resolution to 12 bits
         + ADCRES_2;
 
     // Configure the ADC Memory Buffer
-
+    // Use input pin defined by IN_LASER_SENSOR_ADCINCH (pin A4 in original schematic)
+    // Use positive reference of AVcc
+    // Use negative reference of AVss
+    ADCMCTL0 = IN_LASER_SENSOR_ADCINCH | ADCSREF_1;
 
     // Clear the adc conversion complete interrupt flag
-    ADCIFG &= ~ADCIFG0;
+    //ADCIFG &= ~ADCIFG0;
 
     // Enable the ADC conversion complete Interrupt
     ADCIE |= ADCIE0|ADCINIE|ADCLOIE|ADCHIIE|ADCOVIE|ADCTOVIE;
@@ -154,5 +150,8 @@ void LightSensor::InitADC()
 void LightSensor::StartADCConv()
 {
     // enable ADC
+    ADCCTL0 &= ~ADCENC;
+    ADCCTL1 &= ~ADCCONSEQ;
+    ADCCTL1 |= ADCCONSEQ_2;
     ADCCTL0 |= ADCENC | ADCSC;
 }
